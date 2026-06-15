@@ -1,14 +1,13 @@
-# VMS 車輛管理系統 — 混沌測試實驗室
+# 混沌測試
 
 本專案將 FastAPI 車輛管理系統（VMS）打包為 Docker Compose 混沌測試環境，用於測試系統在不同故障情境下的復原能力。本版本為 **應用程式崩潰模擬版**（透過殺掉容器內 PID 1 來模擬 App 崩潰）。
 
 ---
 
-## 1. 安裝與啟動教學
+## 1. 安裝與啟動教學 (沒測試過 Windows)
 
 ### 前置需求
 - 已安裝 Docker Desktop (Windows) 或 Docker Engine + Docker Compose v2 (Linux/Ubuntu)
-- 至少 4 GB RAM
 
 ### 啟動步驟
 1. **複製環境設定檔**：
@@ -26,7 +25,7 @@
    docker compose up -d --build
    ```
 
-3. **執行冒煙測試**（確認服務正常）：
+3. **執行冒煙測試 (smoke test)**（確認服務正常）：
    - **Windows (PowerShell)**:
      ```powershell
      .\scripts\smoke-test.ps1
@@ -49,8 +48,6 @@
   ```bash
   ./scripts/start-chaos-gui.sh
   ```
-  *(若在遠端 VM 執行，請使用 `HOST=0.0.0.0 ./scripts/start-chaos-gui.sh`)*
-
 - **Windows (PowerShell)**:
   若要直接在本機執行 Python GUI（需先執行 `pip install -r requirements.txt`）：
   ```powershell
@@ -73,20 +70,13 @@
 - **網址**：`http://localhost:3000/d/vms-chaos/vms-chaos-testing`（預設帳密：`admin` / `admin`）
 - **觀察指標**：
   - **Request Rate**：注入故障期間，每秒請求數是否歸零。
-  - **Availability**：可用性百分比的波動。
-  - **API Uptime**：容器因 `kill` 或 `restart` 重啟後，運行時間是否歸零重計。
+  - **API 平均回應延遲 (Latency)**：平均回應時間是否增加。
+  - **服務存活時間軸 (Auto-healing 觀測區)**：觀察自動修復效果。
 
-### B. Prometheus 告警與指標
-- **網址**：`http://localhost:9090`
-- **常用查詢 (PromQL)**：
-  - `up{job="vms-api"}`：確認 API 容器是否存活（1 為存活，0 為異常）。
-  - `vms_app_uptime_seconds`：應用程式運作時間。
-- **告警狀態**：可切換至 "Alerts" 頁面，觀察當 API 停止時，`VmsApiDown` 告警是否觸發。
-
-### C. Portainer 容器狀態
+### B. Portainer 容器狀態
 - **網址**：`http://localhost:9000`
 - **觀察重點**：
-  - 當點擊 `kill` 實驗時，`vms-api` 容器的狀態應短暫變為重啟中，隨後自動恢復為 `running`（得益於 Docker 的重啟策略 `restart: unless-stopped`）。
+  - 當點擊 `kill` 實驗時，`vms-api` 容器的狀態應短暫變為重啟中，隨後自動恢復為 `running`
 
 ---
 
