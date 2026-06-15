@@ -1,0 +1,16 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+.venv-chaos-gui/
+venv/
+VMS_Data/
+data/
+*.db
+*.sqlite
+*.sqlite3
+.git/
+.gitignore
+reports/
+tmp_deps/
+tmp_test_data/

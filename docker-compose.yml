@@ -1,0 +1,87 @@
+name: vms-chaos
+
+services:
+  vms-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: vms-api
+    environment:
+      VMS_DATA_DIR: /data
+    cap_add:
+      - NET_ADMIN
+    ports:
+      - "${VMS_API_PORT:-8000}:8000"
+    volumes:
+      - ./data:/data
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=3).read()"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    restart: unless-stopped
+
+  prometheus:
+    image: prom/prometheus:v2.55.1
+    container_name: vms-prometheus
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+      - --web.enable-lifecycle
+    ports:
+      - "${PROMETHEUS_PORT:-9090}:9090"
+    volumes:
+      - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./monitoring/prometheus/alert.rules.yml:/etc/prometheus/alert.rules.yml:ro
+      - prometheus_data:/prometheus
+    depends_on:
+      vms-api:
+        condition: service_healthy
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana:11.4.0
+    container_name: vms-grafana
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-admin}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    ports:
+      - "${GRAFANA_PORT:-3000}:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
+    depends_on:
+      - prometheus
+    restart: unless-stopped
+
+  portainer:
+    image: portainer/portainer-ce:2.21.5
+    container_name: vms-portainer
+    ports:
+      - "${PORTAINER_PORT:-9000}:9000"
+      - "9443:9443"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - portainer_data:/data
+    restart: unless-stopped
+
+  pumba-delay:
+    image: gaiaadm/pumba:0.10.1
+    container_name: vms-pumba-delay
+    profiles:
+      - chaos
+    environment:
+      DOCKER_API_VERSION: "1.44"
+    cap_add:
+      - NET_ADMIN
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    command: ["--log-level", "info", "netem", "--duration", "45s", "delay", "--time", "1000", "--jitter", "200", "re2:vms-api"]
+
+volumes:
+  prometheus_data:
+  grafana_data:
+  portainer_data:

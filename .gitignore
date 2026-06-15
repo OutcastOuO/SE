@@ -1,0 +1,75 @@
+# =====================
+# Python
+# =====================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# =====================
+# Virtual Environments
+# =====================
+.venv/
+.venv-chaos-gui/
+venv/
+env/
+ENV/
+
+# =====================
+# Environment Variables
+# =====================
+.env
+
+# =====================
+# Data / Database (runtime generated)
+# =====================
+data/
+*.db
+*.sqlite
+*.sqlite3
+
+# =====================
+# Docker (runtime volumes / temp)
+# =====================
+prometheus_data/
+grafana_data/
+portainer_data/
+
+# =====================
+# Testing & Coverage
+# =====================
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+nosetests.xml
+
+# =====================
+# Logs
+# =====================
+*.log
+
+# =====================
+# OS Specific
+# =====================
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# =====================
+# IDEs / Editors
+# =====================
+.vscode/
+.idea/
+*.swp
+*.swo
+*.sublime-project
+*.sublime-workspace
+
+# =====================
+# Misc / Temp
+# =====================
+reports/
+tmp_deps/
+tmp_test_data/

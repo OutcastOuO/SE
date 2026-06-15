@@ -1,0 +1,20 @@
+groups:
+  - name: vms-chaos
+    rules:
+      - alert: VmsApiDown
+        expr: up{job="vms-api"} == 0
+        for: 15s
+        labels:
+          severity: critical
+        annotations:
+          summary: VMS API is not scrapeable
+          description: Prometheus cannot scrape the FastAPI metrics endpoint.
+
+      - alert: VmsApiHighErrorRate
+        expr: sum(rate(vms_http_requests_total{status=~"5.."}[1m])) > 0
+        for: 15s
+        labels:
+          severity: warning
+        annotations:
+          summary: VMS API is returning 5xx responses
+          description: One or more server errors were observed during the chaos test.
